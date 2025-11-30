@@ -64,7 +64,7 @@
 <body>
   <div class="glow-orb"></div>
   <div class="card">
-    <div class="label">离18:00下班溜溜球还有</div>
+    <div class="label">离21:00下班溜溜球还有</div>
     <div class="time" id="countdown">00:00:00</div>
     <div class="status" id="status">正在获取北京时间...</div>
   </div>
@@ -91,7 +91,7 @@
     }
 
     function nextTargetUtc(beijingNow) {
-      let target = Date.UTC(beijingNow.year, beijingNow.month - 1, beijingNow.day, 10, 0, 0); // 18:00@UTC+8 => 10:00 UTC
+      let target = Date.UTC(beijingNow.year, beijingNow.month - 1, beijingNow.day, 13, 0, 0); // 21:00@UTC+8 => 13:00 UTC
       if (Date.now() >= target) {
         const date = new Date(target);
         date.setUTCDate(date.getUTCDate() + 1);
@@ -155,7 +155,7 @@
 
       if (diff <= 0) {
         countdownEl.textContent = '00:00:00';
-        statusEl.innerHTML = '已经抵达 <span>18:00</span>！';
+        statusEl.innerHTML = '已经抵达 <span>21:00</span>！';
         return;
       }
 
