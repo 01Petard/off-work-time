@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>距离北京时间18:00还有多久</title>
+  <title>离下班还有多久</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Orbitron", "Helvetica Neue", Arial, sans-serif; }
     body {
@@ -104,9 +104,52 @@
       return String(num).padStart(2, '0');
     }
 
+    // 判断当前是大周还是小周，以及是否是休息日
+    function isRestDay(beijingDate) {
+      // 大小周开始日期：2025年12月1日（周一）
+      const startDate = new Date(2025, 10, 3); // 月份从0开始，11表示12月
+      const currentDate = new Date(beijingDate.year, beijingDate.month - 1, beijingDate.day);
+      
+      // 如果当前日期在开始日期之前，按工作日处理
+      if (currentDate.getTime() < startDate.getTime()) {
+        return false;
+      }
+      
+      // 计算当前日期是周几（0=周日, 1=周一, ..., 6=周六）
+      const dayOfWeek = currentDate.getDay();
+      
+      // 计算从开始日期到当前日期经过了多少天
+      const diffTime = currentDate.getTime() - startDate.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      // 计算当前是第几周（从第1周开始）
+      // 由于12月1日是周一，所以可以直接计算周数
+      const weekNumber = Math.floor(diffDays / 7) + 1; // 第1周、第2周...
+      
+      // 判断是大周还是小周：奇数周是小周，偶数周是大周
+      const isSmallWeek = weekNumber % 2 === 1;
+      
+      // 判断是否是休息日
+      if (isSmallWeek) {
+        // 小周：只休息周日
+        return dayOfWeek === 0;
+      } else {
+        // 大周：休息周六和周日
+        return dayOfWeek === 0 || dayOfWeek === 6;
+      }
+    }
+
     function updateCountdown() {
       const now = new Date();
       const bj = getShanghaiParts(now);
+      
+      // 判断是否是休息日
+      if (isRestDay(bj)) {
+        countdownEl.textContent = '休息';
+        statusEl.innerHTML = '今天是 <span>休息日</span>，好好放松吧！';
+        return;
+      }
+      
       const target = nextTargetUtc(bj);
       const diff = target - now.getTime();
 
