@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>距离北京时间18:00还有多久</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Orbitron", "Helvetica Neue", Arial, sans-serif; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1b1f3a, #05060a 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f8fbff;
+      overflow: hidden;
+    }
+    .glow-orb {
+      position: absolute;
+      width: 60vmax;
+      height: 60vmax;
+      background: radial-gradient(circle, rgba(52,140,255,0.35), transparent 70%);
+      filter: blur(6rem);
+      animation: drift 14s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+    @keyframes drift { from { transform: translate(-10%, -15%); } to { transform: translate(15%, 10%); } }
+    .card {
+      position: relative;
+      z-index: 1;
+      width: min(90vw, 560px);
+      padding: 3rem 2.5rem;
+      border-radius: 32px;
+      background: rgba(9,13,25,0.75);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 40px 80px rgba(5,6,10,0.7);
+      text-align: center;
+    }
+    .label {
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.82rem;
+      margin-bottom: 1.5rem;
+    }
+    .time {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      letter-spacing: 0.18em;
+      font-weight: 700;
+      color: #7dfcff;
+      text-shadow: 0 0 15px rgba(125,252,255,0.75);
+      margin-bottom: 1rem;
+    }
+    .status {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.85);
+    }
+    .status span {
+      color: #ff8df4;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-orb"></div>
+  <div class="card">
+    <div class="label">离18:00下班溜溜球还有</div>
+    <div class="time" id="countdown">00:00:00</div>
+    <div class="status" id="status">正在获取北京时间...</div>
+  </div>
+
+  <script>
+    const countdownEl = document.getElementById('countdown');
+    const statusEl = document.getElementById('status');
+
+    function getShanghaiParts(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('zh-CN', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: 'numeric', second: 'numeric',
+        hour12: false
+      }).formatToParts(date);
+
+      const map = {};
+      for (const part of parts) {
+        if (part.type !== 'literal') {
+          map[part.type] = parseInt(part.value, 10);
+        }
+      }
+      return map;
+    }
+
+    function nextTargetUtc(beijingNow) {
+      let target = Date.UTC(beijingNow.year, beijingNow.month - 1, beijingNow.day, 10, 0, 0); // 18:00@UTC+8 => 10:00 UTC
+      if (Date.now() >= target) {
+        const date = new Date(target);
+        date.setUTCDate(date.getUTCDate() + 1);
+        target = date.getTime();
+      }
+      return target;
+    }
+
+    function pad(num) {
+      return String(num).padStart(2, '0');
+    }
+
+    function updateCountdown() {
+      const now = new Date();
+      const bj = getShanghaiParts(now);
+      const target = nextTargetUtc(bj);
+      const diff = target - now.getTime();
+
+      if (diff <= 0) {
+        countdownEl.textContent = '00:00:00';
+        statusEl.innerHTML = '已经抵达 <span>18:00</span>！';
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      countdownEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      statusEl.innerHTML = `当前北京时间 <span>${pad(bj.hour)}:${pad(bj.minute)}:${pad(bj.second)}</span>`;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
